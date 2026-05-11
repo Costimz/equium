@@ -120,7 +120,22 @@ Replace `YOUR_RPC_URL` with your actual Solana RPC URL:
 ```bash
 ./target/release/equium-miner \
   --keypair ~/.config/solana/eqm.json \
-  --rpc-url YOUR_RPC_URL
+  --rpc-url YOUR_RPC_URL \
+  --max-nonces-per-round 1 \
+  --threads 4
+```
+
+> **Important — Mac users must set `--max-nonces-per-round 1`**
+>
+> The default value (4096) causes each batch of solve attempts to take longer than the 1-minute round on Mac hardware. The miner will appear to do nothing — showing only the round header with no `· try #` lines — because the round expires before the batch finishes. Setting it to `1` makes the miner print output and check for a new challenge after every single solve attempt (~500ms), keeping it in sync with the network.
+
+You should see output like this:
+
+```
+round #785   reward 25 EQM   target 0x000007ff…
+────────────────────────────────────────────────────
+  · try #1   above target   487ms   2.1 H/s
+  · try #2   above target   501ms   2.0 H/s
 ```
 
 ---
@@ -130,6 +145,7 @@ Replace `YOUR_RPC_URL` with your actual Solana RPC URL:
 | Flag | Description |
 |---|---|
 | `--threads N` | Number of CPU threads to use |
+| `--max-nonces-per-round N` | Nonce attempts per thread before refetching chain state. Set to `1` on Mac. |
 | `--max-blocks N` | Stop after N successfully mined blocks |
 | `--cu-limit N` | Compute unit limit per transaction |
 
@@ -139,6 +155,7 @@ Replace `YOUR_RPC_URL` with your actual Solana RPC URL:
 ./target/release/equium-miner \
   --keypair ~/.config/solana/eqm.json \
   --rpc-url YOUR_RPC_URL \
+  --max-nonces-per-round 1 \
   --threads 4
 ```
 

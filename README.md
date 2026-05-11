@@ -62,6 +62,8 @@ The reference Rust implementation. Single binary, no dependencies beyond what `c
 - [macOS CLI Mining Guide](docs/mining-guide-mac.md)
 - [Linux CLI Mining Guide](docs/mining-guide-linux.md)
 
+> **Mac users:** add `--max-nonces-per-round 1` to your start command. Without it the miner silently stalls — each batch of solve attempts takes longer than the 1-minute round, so the round resets before any output appears.
+
 ```bash
 git clone https://github.com/HannaPrints/equium.git
 cd equium

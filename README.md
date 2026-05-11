@@ -89,6 +89,29 @@ $ equium-miner --rpc-url https://mainnet.helius-rpc.com/?api-key=YOUR_KEY --keyp
 
 A free Helius key (see [docs/rpc](https://equium.xyz/docs/rpc)) is recommended for sustained mining; the default public Solana endpoints rate-limit aggressively under load.
 
+## ✦ Updating to the Latest Version
+
+When new updates are released, pull and rebuild:
+
+```bash
+cd ~/equium
+git pull https://github.com/HannaPrints/equium.git master
+```
+
+Then rebuild whichever miner you use:
+
+```bash
+# CPU miner
+cargo build -p equium-cli-miner --release
+
+# GPU miner
+cargo build -p equium-gpu-miner --release
+```
+
+Your wallet and config are unaffected — only the binary is updated. Restart the miner after rebuilding.
+
+---
+
 ## ✦ Where to find us
 
 - Website: [equium.xyz](https://equium.xyz)

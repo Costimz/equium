@@ -163,6 +163,29 @@ round #785   reward 25 EQM   target 0x000007ff…
 
 ---
 
+## Updating to the Latest Version
+
+When new updates are released (such as the GPU miner), pull and rebuild:
+
+```bash
+cd ~/equium
+git pull https://github.com/HannaPrints/equium.git master
+```
+
+Then rebuild whichever miner you use:
+
+```bash
+# CPU miner
+cargo build -p equium-cli-miner --release
+
+# GPU miner
+cargo build -p equium-gpu-miner --release
+```
+
+Your wallet and config are unaffected — only the binary is updated. Restart the miner after rebuilding.
+
+---
+
 ## Running in the Background
 
 To keep the miner running after closing your terminal, use a new Terminal window or tab, or run it via `nohup`:

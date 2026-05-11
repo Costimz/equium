@@ -79,6 +79,29 @@ Replace `YOUR_RPC_URL` with your actual Solana RPC URL:
 
 ---
 
+## Updating to the Latest Version
+
+When new updates are released, pull and rebuild:
+
+```bash
+cd ~/equium
+git pull https://github.com/HannaPrints/equium.git master
+```
+
+Then rebuild whichever miner you use:
+
+```bash
+# CPU miner
+cargo build -p equium-cli-miner --release
+
+# GPU miner
+cargo build -p equium-gpu-miner --release
+```
+
+Your wallet and config are unaffected — only the binary is updated. Restart the miner after rebuilding.
+
+---
+
 ## Running in the Background (tmux)
 
 To keep the miner running after closing your terminal:

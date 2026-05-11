@@ -197,6 +197,52 @@ export default function Page() {
           are possible — including parameter changes.
         </li>
       </UL>
+
+      <H2 id="gpu">GPU mining</H2>
+      <P>
+        Equihash 96,5 is memory-hard by design. Each Wagner solve needs a
+        few megabytes of working state and many small XOR + sort
+        operations, which suit a CPU (large, fast L2/L3 caches) much
+        better than they suit a GPU (huge ALU array, smaller per-thread
+        cache). The result is that GPU advantage over a multi-core CPU is
+        bounded — typically 5x to 10x on modern hardware, not the 100x to
+        1000x you see with SHA-based proof-of-work. CPU miners can still
+        win blocks; their share just shrinks as GPU hashrate joins the
+        network and the retargeter responds.
+      </P>
+      <P>
+        <strong>The reference open-source GPU miner is live (v0.1).</strong>{" "}
+        Same Rust code base targets every modern GPU via{" "}
+        <a
+          href="https://github.com/gfx-rs/wgpu"
+          target="_blank"
+          rel="noreferrer noopener"
+          className="text-[var(--color-rose)] hover:underline"
+        >
+          wgpu
+        </a>
+        : Metal on macOS, Vulkan on Linux/Windows, DX12 on Windows. The
+        v0.1 release is hybrid — GPU runs the BLAKE2b leaf-generation
+        pass (~70% of solver time on CPU), CPU still runs Wagner rounds.
+        v0.2 onward moves Wagner to GPU and adds WebGPU support for the
+        browser miner. Source at{" "}
+        <a
+          href="https://github.com/HannaPrints/equium/tree/master/clients/gpu-miner"
+          target="_blank"
+          rel="noreferrer noopener"
+          className="text-[var(--color-rose)] hover:underline"
+        >
+          clients/gpu-miner
+        </a>
+        .
+      </P>
+      <P>
+        Worth noting: protocol parameters can't change after{" "}
+        <Code>renounce_admin</Code> ran, so we can't &quot;fix&quot; GPU
+        dominance by tightening Equihash params later. The protocol commits
+        to 96,5 forever; the rest is a software question, and the answer
+        is to make every accelerated implementation open.
+      </P>
     </DocsLayout>
   );
 }

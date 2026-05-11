@@ -58,6 +58,10 @@ The browser miner is the easiest to try; the desktop app is the recommended stea
 
 The reference Rust implementation. Single binary, no dependencies beyond what `cargo` produces.
 
+**Step-by-step setup guides:**
+- [macOS CLI Mining Guide](docs/mining-guide-mac.md)
+- [Linux CLI Mining Guide](docs/mining-guide-linux.md)
+
 ```bash
 git clone https://github.com/HannaPrints/equium.git
 cd equium

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Equium Mining Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d0f;
+    color: #e2e2e2;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  .logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: #c084fc;
+    letter-spacing: 0.05em;
+  }
+
+  .logo span { color: #fbbf24; }
+
+  .refresh-info {
+    font-size: 11px;
+    color: #555;
+  }
+
+  .refresh-info.active { color: #86efac; }
+
+  /* Config bar */
+  .config {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .config input {
+    flex: 1;
+    min-width: 200px;
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 6px;
+    color: #e2e2e2;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .config input:focus { border-color: #c084fc; }
+  .config input::placeholder { color: #52525b; }
+
+  .config button {
+    background: #c084fc;
+    border: none;
+    border-radius: 6px;
+    color: #0d0d0f;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 20px;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .config button:hover { background: #a855f7; }
+
+  /* Stats cards */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .card {
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .card-label {
+    color: #71717a;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
+  .card-value {
+    font-size: 26px;
+    font-weight: 700;
+  }
+
+  .card-value.green { color: #86efac; }
+  .card-value.red   { color: #f87171; }
+  .card-value.gold  { color: #fbbf24; }
+  .card-value.purple{ color: #c084fc; }
+
+  .card-sub {
+    font-size: 11px;
+    color: #52525b;
+    margin-top: 4px;
+  }
+
+  /* Table */
+  .table-wrap {
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #27272a;
+  }
+
+  .table-title { color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    background: #111113;
+    color: #52525b;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 10px 16px;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  tbody tr {
+    border-top: 1px solid #1f1f23;
+    transition: background 0.1s;
+  }
+
+  tbody tr:hover { background: #1f1f23; }
+
+  td {
+    padding: 10px 16px;
+    vertical-align: middle;
+  }
+
+  .badge {
+    border-radius: 4px;
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+  }
+
+  .badge.minted  { background: #14532d; color: #86efac; }
+  .badge.failed  { background: #450a0a; color: #f87171; }
+  .badge.stale   { background: #292524; color: #a8a29e; }
+
+  .sig-link {
+    color: #818cf8;
+    text-decoration: none;
+    font-size: 12px;
+  }
+
+  .sig-link:hover { color: #a5b4fc; text-decoration: underline; }
+
+  .time { color: #71717a; font-size: 11px; }
+
+  /* Empty / loading states */
+  .state-msg {
+    padding: 48px;
+    text-align: center;
+    color: #3f3f46;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #3f3f46;
+    border-top-color: #c084fc;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    background: #450a0a;
+    border: 1px solid #7f1d1d;
+    border-radius: 6px;
+    color: #fca5a5;
+    font-size: 12px;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">EQUIUM <span>⛏</span> DASHBOARD</div>
+  <div class="refresh-info" id="refreshInfo">not started</div>
+</header>
+
+<div class="config">
+  <input id="walletInput" type="text" placeholder="Wallet address (e.g. F2CqAu…)" />
+  <input id="rpcInput"    type="text" placeholder="RPC URL (e.g. https://mainnet.helius-rpc.com/?api-key=…)" />
+  <button onclick="start()">Start</button>
+</div>
+
+<div class="error-msg" id="errorMsg"></div>
+
+<div class="stats">
+  <div class="card">
+    <div class="card-label">Total Attempts</div>
+    <div class="card-value purple" id="statTotal">—</div>
+    <div class="card-sub">mine txs sent</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Minted</div>
+    <div class="card-value green" id="statMinted">—</div>
+    <div class="card-sub">blocks won</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Failed</div>
+    <div class="card-value red" id="statFailed">—</div>
+    <div class="card-sub">rejected / stale</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Success Rate</div>
+    <div class="card-value gold" id="statRate">—</div>
+    <div class="card-sub">minted / total</div>
+  </div>
+  <div class="card">
+    <div class="card-label">EQM Earned</div>
+    <div class="card-value gold" id="statEqm">—</div>
+    <div class="card-sub">estimated @ 25/block</div>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <div class="table-header">
+    <span class="table-title">Recent Mining Attempts</span>
+    <span class="time" id="lastUpdate">—</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Status</th>
+        <th>Signature</th>
+        <th>Error</th>
+      </tr>
+    </thead>
+    <tbody id="txBody">
+      <tr><td colspan="4" class="state-msg">Enter your wallet address and RPC URL above to start.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+const PROGRAM_ID = 'ZKGMUfxiRCXFPnqz9zgqAnuqJy15jk7fKbR4o6FuEQM';
+const SOLSCAN   = 'https://solscan.io/tx/';
+const REFRESH_MS = 30_000;
+
+let wallet = '';
+let rpcUrl = '';
+let timer  = null;
+
+// Persist config across reloads
+const saved = JSON.parse(localStorage.getItem('eqm-config') || '{}');
+if (saved.wallet) document.getElementById('walletInput').value = saved.wallet;
+if (saved.rpc)    document.getElementById('rpcInput').value    = saved.rpc;
+
+function start() {
+  wallet = document.getElementById('walletInput').value.trim();
+  rpcUrl = document.getElementById('rpcInput').value.trim();
+  if (!wallet || !rpcUrl) { showError('Please enter both a wallet address and RPC URL.'); return; }
+  localStorage.setItem('eqm-config', JSON.stringify({ wallet, rpc: rpcUrl }));
+  hideError();
+  clearInterval(timer);
+  fetch_and_render();
+  timer = setInterval(fetch_and_render, REFRESH_MS);
+}
+
+async function rpc(method, params) {
+  const res = await fetch(rpcUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const { result, error } = await res.json();
+  if (error) throw new Error(error.message);
+  return result;
+}
+
+async function fetch_and_render() {
+  setRefresh('loading');
+  try {
+    // Get last 50 signatures for the wallet
+    const sigs = await rpc('getSignaturesForAddress', [
+      wallet,
+      { limit: 50, commitment: 'confirmed' },
+    ]);
+
+    if (!sigs || sigs.length === 0) {
+      renderEmpty('No transactions found for this wallet yet.');
+      updateStats([], []);
+      return;
+    }
+
+    // Fetch all transactions in parallel
+    const txs = await Promise.all(
+      sigs.map(s =>
+        rpc('getTransaction', [
+          s.signature,
+          { encoding: 'jsonParsed', commitment: 'confirmed', maxSupportedTransactionVersion: 0 },
+        ]).catch(() => null)
+      )
+    );
+
+    // Filter to only Equium program interactions
+    const miningTxs = txs
+      .map((tx, i) => ({ tx, sig: sigs[i] }))
+      .filter(({ tx }) => {
+        if (!tx) return false;
+        const keys = tx.transaction?.message?.accountKeys || [];
+        return keys.some(k => (k.pubkey || k) === PROGRAM_ID);
+      });
+
+    if (miningTxs.length === 0) {
+      renderEmpty('No mining transactions found yet. Start the miner to see attempts here.');
+      updateStats([], []);
+      return;
+    }
+
+    renderTable(miningTxs);
+    updateStats(miningTxs, sigs);
+    setRefresh('ok');
+  } catch (e) {
+    showError('Failed to fetch data: ' + e.message);
+    setRefresh('error');
+  }
+}
+
+function renderTable(items) {
+  const tbody = document.getElementById('txBody');
+  tbody.innerHTML = items.map(({ tx, sig }) => {
+    const success = !sig.err && tx.meta && tx.meta.err === null;
+    const ts      = sig.blockTime ? new Date(sig.blockTime * 1000).toLocaleString() : '—';
+    const short   = sig.signature.slice(0, 8) + '…' + sig.signature.slice(-6);
+    const errMsg  = sig.err ? JSON.stringify(sig.err).slice(0, 60) : '—';
+    const badge   = success
+      ? '<span class="badge minted">✓ Minted</span>'
+      : '<span class="badge failed">✗ Failed</span>';
+
+    return `<tr>
+      <td class="time">${ts}</td>
+      <td>${badge}</td>
+      <td><a class="sig-link" href="${SOLSCAN}${sig.signature}" target="_blank">${short}</a></td>
+      <td class="time">${success ? '—' : errMsg}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('lastUpdate').textContent = 'Updated ' + new Date().toLocaleTimeString();
+}
+
+function updateStats(items, allSigs) {
+  const total   = items.length;
+  const minted  = items.filter(({ sig }) => !sig.err).length;
+  const failed  = total - minted;
+  const rate    = total > 0 ? ((minted / total) * 100).toFixed(1) + '%' : '—';
+  const eqm     = (minted * 25).toFixed(0);
+
+  document.getElementById('statTotal').textContent  = total  || '0';
+  document.getElementById('statMinted').textContent = minted || '0';
+  document.getElementById('statFailed').textContent = failed || '0';
+  document.getElementById('statRate').textContent   = rate;
+  document.getElementById('statEqm').textContent    = minted > 0 ? eqm + ' EQM' : '0 EQM';
+}
+
+function renderEmpty(msg) {
+  document.getElementById('txBody').innerHTML =
+    `<tr><td colspan="4" class="state-msg">${msg}</td></tr>`;
+  document.getElementById('lastUpdate').textContent = 'Updated ' + new Date().toLocaleTimeString();
+}
+
+function setRefresh(state) {
+  const el = document.getElementById('refreshInfo');
+  if (state === 'loading') {
+    el.className = 'refresh-info';
+    el.innerHTML = '<span class="spinner"></span>fetching…';
+  } else if (state === 'ok') {
+    el.className = 'refresh-info active';
+    el.textContent = 'auto-refresh every 30s';
+  } else {
+    el.className = 'refresh-info';
+    el.textContent = 'refresh error';
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('errorMsg').style.display = 'none';
+}
+
+// Auto-start if config is saved
+if (saved.wallet && saved.rpc) start();
+</script>
+</body>
+</html>
